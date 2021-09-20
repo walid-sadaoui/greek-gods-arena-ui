@@ -6,8 +6,8 @@ enum RESTMethods {
   DELETE = 'DELETE',
 }
 
-export interface APIResponse<T> {
-  data?: T;
+export interface APIResponse<DataResponseType> {
+  data?: DataResponseType;
   error?: {
     statusCode: number;
     description: string;
@@ -15,15 +15,19 @@ export interface APIResponse<T> {
     isOperational: boolean;
   };
 }
+export interface ResponseData {
+  code: number;
+  message: string;
+}
 
 const API_URL = import.meta.env.VITE_API_URL;
-const token = localStorage.getItem('token') || '';
 
-const fetcher = async <T>(
+const fetcher = async <DataResponseType>(
   route: string,
   method: RESTMethods = RESTMethods.GET,
   body?: string
-): Promise<APIResponse<T>> => {
+): Promise<APIResponse<DataResponseType>> => {
+  const token = localStorage.getItem('token') || '';
   const response: Response = await fetch(`${API_URL}${route}`, {
     method: method,
     headers: {
@@ -36,20 +40,25 @@ const fetcher = async <T>(
     credentials: 'include',
     body: body,
   });
-  const responseData: APIResponse<T> = await response.json();
+  const responseData: APIResponse<DataResponseType> = await response.json();
   return responseData;
 };
 
-const getRequest = async <T>(route: string): Promise<APIResponse<T>> => {
-  const getResponseData: APIResponse<T> = await fetcher(route, RESTMethods.GET);
+const getRequest = async <DataResponseType>(
+  route: string
+): Promise<APIResponse<DataResponseType>> => {
+  const getResponseData: APIResponse<DataResponseType> = await fetcher(
+    route,
+    RESTMethods.GET
+  );
   return getResponseData;
 };
 
-const postRequest = async <T>(
+const postRequest = async <DataResponseType>(
   route: string,
   body?: string
-): Promise<APIResponse<T>> => {
-  const getResponseData: APIResponse<T> = await fetcher(
+): Promise<APIResponse<DataResponseType>> => {
+  const getResponseData: APIResponse<DataResponseType> = await fetcher(
     route,
     RESTMethods.POST,
     body
@@ -57,8 +66,10 @@ const postRequest = async <T>(
   return getResponseData;
 };
 
-const deleteRequest = async <T>(route: string): Promise<APIResponse<T>> => {
-  const deleteResponseData: APIResponse<T> = await fetcher(
+const deleteRequest = async <DataResponseType>(
+  route: string
+): Promise<APIResponse<DataResponseType>> => {
+  const deleteResponseData: APIResponse<DataResponseType> = await fetcher(
     route,
     RESTMethods.DELETE
   );

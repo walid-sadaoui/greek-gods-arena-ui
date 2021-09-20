@@ -1,5 +1,6 @@
 import React from 'react';
-import { APIResponse, getRequest, postRequest } from '../../api';
+import { APIResponse, postRequest, ResponseData } from '../../api';
+import { getCurrentUser } from '../../api/users';
 import Loading from '../../components/common/Loading';
 import { User } from '../../models/User';
 
@@ -14,11 +15,6 @@ interface SignupFormValues {
   password: string;
 }
 
-interface ResponseData {
-  code: number;
-  message: string;
-}
-
 interface LogInData extends ResponseData {
   user: User;
   token: string;
@@ -29,12 +25,9 @@ interface SignUpData extends ResponseData {
   user: User;
 }
 
-interface GetUserData extends ResponseData {
-  user: User;
-}
-
 type AuthContextProps = {
-  user: Partial<User> | undefined;
+  user: User | undefined;
+  getUser: () => User;
   logout: () => void;
   login: (newUser: LoginFormValues) => Promise<string | undefined>;
   signup: (newUser: SignupFormValues) => Promise<string | undefined>;
@@ -52,12 +45,12 @@ const useAuth = (): AuthContextProps => {
 };
 
 const AuthProvider: React.FC = ({ children }) => {
-  const [user, setUser] = React.useState<Partial<User> | undefined>(undefined);
+  const [user, setUser] = React.useState<User | undefined>(undefined);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-  const getCurrentUser = async (): Promise<void> => {
+  const handleUserAuth = async (): Promise<void> => {
     try {
-      const getUserResponse = await getRequest<GetUserData>('/me');
+      const getUserResponse = await getCurrentUser();
       console.log('/me : ', getUserResponse);
       if (getUserResponse.data) {
         setUser(getUserResponse.data.user);
@@ -68,32 +61,31 @@ const AuthProvider: React.FC = ({ children }) => {
     }
   };
 
+  const getUser = (): User => {
+    if (user === undefined) throw new Error('User is not authenticated');
+    return user;
+  };
   const signup = async (
     newUser: SignupFormValues
   ): Promise<string | undefined> => {
-    const signUpResponse: APIResponse<SignUpData> =
-      await postRequest<SignUpData>('/signup', JSON.stringify(newUser));
-    if (signUpResponse.error) {
-      return signUpResponse.error.message;
-    }
+    const { error }: APIResponse<SignUpData> = await postRequest<SignUpData>(
+      '/signup',
+      JSON.stringify(newUser)
+    );
+    if (error) return error.message;
   };
 
   const login = async (
     newUser: LoginFormValues
   ): Promise<string | undefined> => {
-    const logInResponse: APIResponse<LogInData> = await postRequest<LogInData>(
-      '/login',
-      JSON.stringify(newUser)
-    );
-    console.log(logInResponse);
-    if (logInResponse.data) {
-      localStorage.setItem('token', logInResponse.data.token);
-      localStorage.setItem('refreshToken', logInResponse.data.refreshToken);
-      setUser(logInResponse.data.user);
+    const { data, error }: APIResponse<LogInData> =
+      await postRequest<LogInData>('/login', JSON.stringify(newUser));
+    if (data) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('refreshToken', data.refreshToken);
+      setUser(data.user);
     }
-    if (logInResponse.error) {
-      return logInResponse.error.message;
-    }
+    if (error) return error.message;
   };
 
   const logout = (): void => {
@@ -103,13 +95,13 @@ const AuthProvider: React.FC = ({ children }) => {
   };
 
   React.useEffect(() => {
-    getCurrentUser();
+    handleUserAuth();
   }, []);
 
   if (isLoading) return <Loading />;
 
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, getUser, signup, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

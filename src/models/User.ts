@@ -1,8 +1,10 @@
+import { Character } from './Character';
+
 export interface User {
-  id: number;
+  _id: string;
   username: string;
   email: string;
-  characters?: string[];
+  characters: Character[];
   createdAt: string;
   updatedAt: string;
 }

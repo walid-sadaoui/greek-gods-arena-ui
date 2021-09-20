@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../shared/context/AuthContext';
 
 const Home: React.FC = () => {
@@ -6,7 +7,13 @@ const Home: React.FC = () => {
 
   return (
     <article>
-      {user ? <p>{JSON.stringify(user)}</p> : <p>User not logged In</p>}
+      {user ? (
+        <Link to='/lobby'>
+          <button type='button'>Play</button>
+        </Link>
+      ) : (
+        <p>User not logged In</p>
+      )}
     </article>
   );
 };

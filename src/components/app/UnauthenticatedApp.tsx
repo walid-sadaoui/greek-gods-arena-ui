@@ -8,7 +8,6 @@ import {
 } from 'react-router-dom';
 import SignUp from '../../pages/SignUp';
 import LogIn from '../../pages/LogIn';
-import Home from '../../pages/Home';
 
 const UnauthenticatedApp: FunctionComponent = () => {
   return (
@@ -26,11 +25,10 @@ const UnauthenticatedApp: FunctionComponent = () => {
 const AppRoutes: FunctionComponent = () => {
   return (
     <Switch>
-      <Route exact={true} path='/' component={Home} />
       <Route exact={true} path='/signup' component={SignUp} />
       <Route exact={true} path='/login' component={LogIn} />
       <Route path='*'>
-        <Redirect to='/' />
+        <Redirect to='/login' />
       </Route>
     </Switch>
   );
