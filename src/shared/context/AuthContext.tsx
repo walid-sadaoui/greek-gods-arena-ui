@@ -1,8 +1,8 @@
 import React from 'react';
-import { APIResponse, postRequest, ResponseData } from '../../api';
-import { getCurrentUser } from '../../api/users';
-import Loading from '../../components/common/Loading';
-import { User } from '../../models/User';
+import { APIResponse, postRequest, ResponseData } from 'api';
+import { getCurrentUser } from 'api/users';
+import Loading from 'components/common/Loading';
+import { User } from 'models/User';
 
 interface LoginFormValues {
   email: string;
@@ -31,6 +31,7 @@ type AuthContextProps = {
   logout: () => void;
   login: (newUser: LoginFormValues) => Promise<string | undefined>;
   signup: (newUser: SignupFormValues) => Promise<string | undefined>;
+  updateUserState: () => Promise<void>;
 };
 
 const AuthContext = React.createContext<AuthContextProps | undefined>(
@@ -48,12 +49,15 @@ const AuthProvider: React.FC = ({ children }) => {
   const [user, setUser] = React.useState<User | undefined>(undefined);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-  const handleUserAuth = async (): Promise<void> => {
+  const updateUserState = async (): Promise<void> => {
     try {
-      const getUserResponse = await getCurrentUser();
-      console.log('/me : ', getUserResponse);
-      if (getUserResponse.data) {
-        setUser(getUserResponse.data.user);
+      const { data, error } = await getCurrentUser();
+      if (data) {
+        setUser(data.user);
+      }
+      if (error) {
+        console.log('/me : ', error);
+        if (error.message === 'jwt expired') setUser(undefined);
       }
       setIsLoading(false);
     } catch (error) {
@@ -65,6 +69,7 @@ const AuthProvider: React.FC = ({ children }) => {
     if (user === undefined) throw new Error('User is not authenticated');
     return user;
   };
+
   const signup = async (
     newUser: SignupFormValues
   ): Promise<string | undefined> => {
@@ -95,13 +100,15 @@ const AuthProvider: React.FC = ({ children }) => {
   };
 
   React.useEffect(() => {
-    handleUserAuth();
+    updateUserState();
   }, []);
 
   if (isLoading) return <Loading />;
 
   return (
-    <AuthContext.Provider value={{ user, getUser, signup, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, getUser, signup, login, logout, updateUserState }}
+    >
       {children}
     </AuthContext.Provider>
   );

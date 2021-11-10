@@ -1,1 +1,5 @@
 /* Custom CSS here */
+
+.progress {
+  clip-path: polygon(0 0, 97% 0, 100% 100%, 0% 100%);
+}

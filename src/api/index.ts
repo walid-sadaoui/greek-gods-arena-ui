@@ -9,7 +9,7 @@ enum RESTMethods {
 export interface APIResponse<DataResponseType> {
   data?: DataResponseType;
   error?: {
-    statusCode: number;
+    code: number;
     description: string;
     message: string;
     isOperational: boolean;

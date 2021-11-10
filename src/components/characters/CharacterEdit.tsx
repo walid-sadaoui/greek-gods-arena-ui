@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { updateCharacter } from '../../api/users';
-import { Character } from '../../models/Character';
-import { useAuth } from '../../shared/context/AuthContext';
+import { updateCharacter } from 'api/users';
+import { Character } from 'models/Character';
+import { useAuth } from 'shared/context/AuthContext';
+import Button from 'components/common/Button';
+import SkillUpdater from './SkillUpdater';
 
 interface CharacterEditProps {
   character: Character;
+  onUpdate: (character: Character) => void;
 }
 
 interface EditCharacterInput {
@@ -17,34 +20,25 @@ interface EditCharacterInput {
 
 const SERVER_ERROR = 'Server Error, please try again later';
 
-const CharacterEdit: React.FC<CharacterEditProps> = ({ character }) => {
+const CharacterEdit: React.FC<CharacterEditProps> = ({
+  character,
+  onUpdate,
+}) => {
   const [serverErrorMessage, setServerErrorMessage] = useState<string>('');
-  const [availableSkillPoints, setAvailableSkillPoints] = useState<number>(
-    character.skillPoints
-  );
-  const [health, setHealth] = useState<number>(character.health);
-  const [attack, setAttack] = useState<number>(character.attack);
-  const [defense, setDefense] = useState<number>(character.defense);
-  const [magik, setMagik] = useState<number>(character.magik);
-  const { handleSubmit, register } = useForm<EditCharacterInput>({
+  const [characterToEdit, setCharacterToEdit] = useState<Character>(character);
+  const { handleSubmit, register, setValue } = useForm<EditCharacterInput>({
     mode: 'all',
   });
-  const { getUser } = useAuth();
-
-  const healthValue = register('health');
-  const attackValue = register('attack');
-  const defenseValue = register('defense');
-  const magikValue = register('magik');
+  const { getUser, updateUserState } = useAuth();
 
   const getMaxPropertyValue = (propertyValue: number): number => {
-    let remainingSkillPoints = availableSkillPoints;
+    let remainingSkillPoints = characterToEdit.skillPoints;
     let maxValue = propertyValue;
     while (remainingSkillPoints > 0) {
-      if (propertyValue === 0) {
+      if (maxValue === 0) {
         remainingSkillPoints = remainingSkillPoints - 1;
       } else {
-        remainingSkillPoints =
-          remainingSkillPoints - Math.ceil(propertyValue / 5);
+        remainingSkillPoints = remainingSkillPoints - Math.ceil(maxValue / 5);
       }
       if (remainingSkillPoints >= 0) maxValue = maxValue + 1;
     }
@@ -52,174 +46,241 @@ const CharacterEdit: React.FC<CharacterEditProps> = ({ character }) => {
   };
 
   const getMaxHealthValue = (): number => {
-    const maxHealth = health + availableSkillPoints;
+    const maxHealth = characterToEdit.health + characterToEdit.skillPoints;
     return maxHealth;
   };
 
-  const updateHealth = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const newHealth = parseInt(event.target.value);
-    if (newHealth > health) {
-      increaseHealth();
+  const updateSkill = (
+    newSkillValue: number,
+    skillName: string,
+    previousSkillValue: number
+  ): void => {
+    if (newSkillValue > previousSkillValue) {
+      increaseSkill(skillName);
     } else {
-      decreaseHealth();
+      decreaseSkill(skillName);
     }
   };
 
-  const updateAttack = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const newAttack = parseInt(event.target.value);
-    if (newAttack > attack) {
-      increaseAttack();
-    } else {
-      decreaseAttack();
+  const increaseSkill = (skillName: string): void => {
+    switch (skillName) {
+      case 'health':
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            health: characterToEdit.health + 1,
+            skillPoints: characterToEdit.skillPoints - 1,
+          },
+        });
+        break;
+      case 'attack':
+        const remainingAttack =
+          characterToEdit.skillPoints -
+          (characterToEdit.attack === 0
+            ? 1
+            : Math.ceil(characterToEdit.attack / 5));
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            attack: characterToEdit.attack + 1,
+            skillPoints: remainingAttack,
+          },
+        });
+        break;
+      case 'defense':
+        const remainingDefense =
+          characterToEdit.skillPoints -
+          (characterToEdit.defense === 0
+            ? 1
+            : Math.ceil(characterToEdit.defense / 5));
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            defense: characterToEdit.defense + 1,
+            skillPoints: remainingDefense,
+          },
+        });
+        break;
+      case 'magik':
+        const remainingMagik =
+          characterToEdit.skillPoints -
+          (characterToEdit.magik === 0
+            ? 1
+            : Math.ceil(characterToEdit.magik / 5));
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            magik: characterToEdit.magik + 1,
+            skillPoints: remainingMagik,
+          },
+        });
+        break;
+
+      default:
+        break;
     }
   };
 
-  const updateDefense = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const newDefense = parseInt(event.target.value);
-    if (newDefense > defense) {
-      increaseDefense();
-    } else {
-      decreaseDefense();
+  const decreaseSkill = (skillName: string): void => {
+    switch (skillName) {
+      case 'health':
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            health: characterToEdit.health - 1,
+            skillPoints: characterToEdit.skillPoints + 1,
+          },
+        });
+        break;
+      case 'attack':
+        const remainingAttack =
+          characterToEdit.skillPoints +
+          (characterToEdit.attack === 1
+            ? 1
+            : Math.ceil((characterToEdit.attack - 1) / 5));
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            attack: characterToEdit.attack - 1,
+            skillPoints: remainingAttack,
+          },
+        });
+        break;
+      case 'defense':
+        const remainingDefense =
+          characterToEdit.skillPoints +
+          (characterToEdit.defense === 1
+            ? 1
+            : Math.ceil((characterToEdit.defense - 1) / 5));
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            defense: characterToEdit.defense - 1,
+            skillPoints: remainingDefense,
+          },
+        });
+        break;
+      case 'magik':
+        const remainingMagik =
+          characterToEdit.skillPoints +
+          (characterToEdit.magik === 1
+            ? 1
+            : Math.ceil((characterToEdit.magik - 1) / 5));
+        setCharacterToEdit({
+          ...characterToEdit,
+          ...{
+            magik: characterToEdit.magik - 1,
+            skillPoints: remainingMagik,
+          },
+        });
+        break;
+
+      default:
+        break;
     }
-  };
-
-  const updateMagik = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const newMagik = parseInt(event.target.value);
-    if (newMagik > magik) {
-      increaseMagik();
-    } else {
-      decreaseMagik();
-    }
-  };
-
-  const increaseHealth = (): void => {
-    setHealth(health + 1);
-    setAvailableSkillPoints(availableSkillPoints - 1);
-  };
-
-  const decreaseHealth = (): void => {
-    setHealth(health - 1);
-    setAvailableSkillPoints(availableSkillPoints + 1);
-  };
-
-  const increaseAttack = (): void => {
-    const remainingSkillPoints =
-      availableSkillPoints - (attack === 0 ? 1 : Math.ceil(attack / 5));
-    setAttack(attack + 1);
-    setAvailableSkillPoints(remainingSkillPoints);
-  };
-
-  const decreaseAttack = (): void => {
-    const remainingSkillPoints =
-      availableSkillPoints + (attack === 1 ? 1 : Math.ceil((attack - 1) / 5));
-    setAttack(attack - 1);
-    setAvailableSkillPoints(remainingSkillPoints);
-  };
-
-  const increaseDefense = (): void => {
-    const remainingSkillPoints =
-      availableSkillPoints - (defense === 0 ? 1 : Math.ceil(defense / 5));
-    setDefense(defense + 1);
-    setAvailableSkillPoints(remainingSkillPoints);
-  };
-
-  const decreaseDefense = (): void => {
-    const remainingSkillPoints =
-      availableSkillPoints + (defense === 1 ? 1 : Math.ceil((defense - 1) / 5));
-    setDefense(defense - 1);
-    setAvailableSkillPoints(remainingSkillPoints);
-  };
-
-  const increaseMagik = (): void => {
-    const remainingSkillPoints =
-      availableSkillPoints - (magik === 0 ? 1 : Math.ceil(magik / 5));
-    setMagik(magik + 1);
-    setAvailableSkillPoints(remainingSkillPoints);
-  };
-
-  const decreaseMagik = (): void => {
-    const remainingSkillPoints =
-      availableSkillPoints + (magik === 1 ? 1 : Math.ceil((magik - 1) / 5));
-    setMagik(magik - 1);
-    setAvailableSkillPoints(remainingSkillPoints);
   };
 
   const onSubmit: SubmitHandler<EditCharacterInput> = async (
     characterSkills
   ) => {
     try {
-      console.log('Skills : ', characterSkills);
-      const errorMessage = await updateCharacter(
+      const { data, error } = await updateCharacter(
         getUser()._id,
         character.name,
         characterSkills
       );
-      console.log('Edit character response : ', errorMessage);
+      if (data) {
+        await updateUserState();
+        setCharacterToEdit(data.character);
+        onUpdate(data.character);
+      }
+      if (error) {
+        setServerErrorMessage(error.message);
+      }
     } catch (error) {
       setServerErrorMessage(SERVER_ERROR);
     }
   };
 
+  React.useEffect(() => {
+    setValue('health', characterToEdit.health);
+    setValue('attack', characterToEdit.attack);
+    setValue('defense', characterToEdit.defense);
+    setValue('magik', characterToEdit.magik);
+  }, [characterToEdit]);
+
+  React.useEffect(() => {
+    setCharacterToEdit(character);
+  }, [character]);
+
+  React.useEffect(() => {
+    register('health');
+    register('attack');
+    register('defense');
+    register('magik');
+  }, []);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <h2>Improve Your Character</h2>
-      <p>Available SkillPoints : {availableSkillPoints}</p>
-      <label htmlFor='health'>Health</label>
-      <p>{health}</p>
-      <input
-        type='range'
-        min={character.health}
-        max={getMaxHealthValue()}
-        value={health}
-        step={1}
-        onChange={(e) => {
-          healthValue.onChange(e);
-          updateHealth(e);
-        }}
-        ref={healthValue.ref}
-      />
-      <label htmlFor='attack'>Attack</label>
-      <p>{attack}</p>
-      <input
-        type='range'
-        min={character.attack}
-        max={getMaxPropertyValue(attack)}
-        value={attack}
-        onChange={(e) => {
-          attackValue.onChange(e);
-          updateAttack(e);
-        }}
-        ref={attackValue.ref}
-      />
-      <label htmlFor='defense'>Defense</label>
-      <p>{defense}</p>
-      <input
-        type='range'
-        min={character.defense}
-        max={getMaxPropertyValue(defense)}
-        value={defense}
-        onChange={(e) => {
-          defenseValue.onChange(e);
-          updateDefense(e);
-        }}
-        ref={defenseValue.ref}
-      />
-      <label htmlFor='magik'>Magik</label>
-      <p>{magik}</p>
-      <input
-        type='range'
-        min={character.magik}
-        max={getMaxPropertyValue(magik)}
-        value={magik}
-        onChange={(e) => {
-          magikValue.onChange(e);
-          updateMagik(e);
-        }}
-        ref={magikValue.ref}
-      />
-      <input type='submit' value='ok' />
-      <p>{serverErrorMessage}</p>
-    </form>
+    <div className='flex p-4'>
+      <div className='flex flex-col items-center flex-1 p-4'>
+        <span className='font-sans uppercase'>Available SkillPoints</span>
+        <span className='pb-4 font-mono text-3xl'>
+          {characterToEdit.skillPoints}
+        </span>
+      </div>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className='flex flex-col p-4 mx-auto'
+      >
+        <SkillUpdater
+          onChange={(skillValue) =>
+            updateSkill(skillValue, 'health', characterToEdit.health)
+          }
+          label='Health'
+          maxPropertyValue={getMaxHealthValue()}
+          minPropertyValue={character.health}
+          value={characterToEdit.health}
+        />
+        <SkillUpdater
+          onChange={(skillValue) => {
+            updateSkill(skillValue, 'attack', characterToEdit.attack);
+          }}
+          label='Attack'
+          maxPropertyValue={getMaxPropertyValue(characterToEdit.attack)}
+          minPropertyValue={character.attack}
+          value={characterToEdit.attack}
+        />
+        <SkillUpdater
+          onChange={(skillValue) =>
+            updateSkill(skillValue, 'defense', characterToEdit.defense)
+          }
+          label='Defense'
+          maxPropertyValue={getMaxPropertyValue(characterToEdit.defense)}
+          minPropertyValue={character.defense}
+          value={characterToEdit.defense}
+        />
+        <SkillUpdater
+          onChange={(skillValue) =>
+            updateSkill(skillValue, 'magik', characterToEdit.magik)
+          }
+          label='Magik'
+          maxPropertyValue={getMaxPropertyValue(characterToEdit.magik)}
+          minPropertyValue={character.magik}
+          value={characterToEdit.magik}
+        />
+        <Button
+          type='submit'
+          value='Update'
+          className='self-start'
+          disabled={
+            character.name !== characterToEdit.name ||
+            (character.name === characterToEdit.name &&
+              character.skillPoints === characterToEdit.skillPoints)
+          }
+        />
+        <p>{serverErrorMessage}</p>
+      </form>
+    </div>
   );
 };
 

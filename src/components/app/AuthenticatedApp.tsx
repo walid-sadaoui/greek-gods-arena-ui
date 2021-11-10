@@ -1,25 +1,21 @@
 import React, { FunctionComponent } from 'react';
 import {
   BrowserRouter as Router,
-  Link,
   Redirect,
+  Switch,
   Route,
 } from 'react-router-dom';
-import Arena from '../../pages/Arena';
-import Home from '../../pages/Home';
-import Lobby from '../../pages/Lobby';
-import Room from '../../pages/Room';
-import { useAuth } from '../../shared/context/AuthContext';
-import Button from '../common/Button';
+import Profile from 'pages/Profile';
+import Arena from 'pages/Arena';
+import Home from 'pages/Home';
+import Lobby from 'pages/Lobby';
+import Room from 'pages/Room';
+import AuthenticatedHeader from './Header/AuthenticatedHeader';
+import Main from 'pages/Main';
 
 const AuthenticatedApp: FunctionComponent = () => {
-  const { logout } = useAuth();
   return (
     <Router>
-      <header>
-        <Link to='/'>Home</Link>
-        <Button value='Logout' onClick={logout} />
-      </header>
       <AppRoutes />
     </Router>
   );
@@ -27,19 +23,33 @@ const AuthenticatedApp: FunctionComponent = () => {
 
 const AppRoutes: FunctionComponent = () => {
   return (
-    <Router>
-      <Route exact={true} path='/' component={Home} />
-      <Route exact={true} path='/lobby' component={Lobby} />
+    <Switch>
+      <Route exact={true} path='/'>
+        <AuthenticatedHeader />
+        <Home />
+      </Route>
+      <Route exact={true} path='/main'>
+        <AuthenticatedHeader />
+        <Main />
+      </Route>
+      <Route exact={true} path='/lobby'>
+        <AuthenticatedHeader />
+        <Lobby />
+      </Route>
       <Route exact={true} path='/room'>
         <Room />
       </Route>
       <Route path='/arena/:id'>
         <Arena />
       </Route>
+      <Route path='/profile'>
+        <AuthenticatedHeader />
+        <Profile />
+      </Route>
       <Route path='*'>
         <Redirect to='/' />
       </Route>
-    </Router>
+    </Switch>
   );
 };
 

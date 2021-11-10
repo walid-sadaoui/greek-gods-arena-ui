@@ -4,6 +4,7 @@ export interface Turn {
   attacker: Attacker;
   defender: Defender;
   attackSuccess: boolean;
+  damages: number;
 }
 
 interface Attacker {

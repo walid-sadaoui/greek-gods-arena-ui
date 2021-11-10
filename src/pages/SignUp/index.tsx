@@ -3,10 +3,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Link, Redirect } from 'react-router-dom';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import LabelInput from '../components/common/LabelInput';
-import { useAuth } from '../shared/context/AuthContext';
+import LabelInput from 'components/common/LabelInput';
+import { useAuth } from 'shared/context/AuthContext';
+import Container from 'components/common/Container';
+import FormErrorMessage from 'components/common/Form/FormErrorMessage';
+import Button from 'components/common/Button';
 
 const SERVER_ERROR = 'Server Error, please try again later';
+const SUBTITLE = 'Bring your Greek Gods to the Top of the Olympus';
 
 interface SignUpInput {
   username: string;
@@ -41,11 +45,21 @@ const signUpSchema = yup.object().shape({
     .oneOf([yup.ref('password'), null], 'Passwords must match'),
 });
 
-const SignUp: React.FC = () => {
+const LogInLink: React.FC = () => {
+  return (
+    <span className='mx-auto'>
+      You already have an account ?{' '}
+      <Link to='/login' className='text-blue-700 hover:underline'>
+        Log in here
+      </Link>
+    </span>
+  );
+};
+
+const SignUpForm: React.FC = () => {
   const [serverErrorMessage, setServerErrorMessage] =
     React.useState<string>('');
   const [signUpSuccess, setSignUpSuccess] = React.useState<boolean>(false);
-  const [signUpError, setSignUpError] = React.useState<boolean>(false);
   const [submitDisabled, setSubmitDisabled] = React.useState<boolean>(false);
   const {
     register,
@@ -67,7 +81,6 @@ const SignUp: React.FC = () => {
       setSubmitDisabled(true);
       const errorMessage = await signup({ username, email, password });
       if (errorMessage) {
-        setSignUpError(true);
         setServerErrorMessage(errorMessage);
         setSubmitDisabled(false);
       } else {
@@ -84,54 +97,77 @@ const SignUp: React.FC = () => {
   }, [setFocus]);
 
   return (
-    <article>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className='flex flex-col px-4 mt-auto'
+    >
       {signUpSuccess ? <Redirect to='/login' /> : null}
-      <h2>Sign Up</h2>
-      <p>Bring your Greek Gods to the Top of the Olympus</p>
-      <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col'>
-        <LabelInput
-          id='signUpUsername'
-          label='Username'
-          type='text'
-          required
-          {...register('username')}
-        />
-        <p>{errors.username?.message}</p>
-        <LabelInput
-          id='signUpEmail'
-          label='Email'
-          type='email'
-          required
-          {...register('email')}
-        />
-        <p>{errors.email?.message}</p>
-        <LabelInput
-          id='signUpPassword'
-          label='Password'
-          type='password'
-          required
-          {...register('password')}
-        />
-        <p>{errors.password?.message}</p>
-        <LabelInput
-          id='signUpPasswordConfirm'
-          label='Confirm Password'
-          type='password'
-          required
-          {...register('confirmPassword')}
-        />
-        <p>{errors.confirmPassword?.message}</p>
-        <input type='submit' value='Sign Up' disabled={submitDisabled} />
-        <p>{serverErrorMessage}</p>
-        <p>{signUpError}</p>
-      </form>
-      <span className='mx-auto'>
-        You already have an account ?{' '}
-        <Link to='/login' className='text-blue-700 hover:underline'>
-          Log in here
-        </Link>
-      </span>
-    </article>
+      <LabelInput
+        id='signUpUsername'
+        label='Username'
+        type='text'
+        required
+        className='pt-4'
+        {...register('username')}
+      />
+      {errors.username?.message && (
+        <FormErrorMessage errorMessage={errors.username?.message} />
+      )}
+      <LabelInput
+        id='signUpEmail'
+        label='Email'
+        type='email'
+        required
+        className='pt-4'
+        {...register('email')}
+      />
+      {errors.email?.message && (
+        <FormErrorMessage errorMessage={errors.email?.message} />
+      )}
+      <LabelInput
+        id='signUpPassword'
+        label='Password'
+        type='password'
+        required
+        className='pt-4'
+        {...register('password')}
+      />
+      {errors.password?.message && (
+        <FormErrorMessage errorMessage={errors.password?.message} />
+      )}
+      <LabelInput
+        id='signUpPasswordConfirm'
+        label='Confirm Password'
+        type='password'
+        required
+        className='pt-4'
+        {...register('confirmPassword')}
+      />
+      {errors.confirmPassword?.message && (
+        <FormErrorMessage errorMessage={errors.confirmPassword?.message} />
+      )}
+      <Button
+        type='submit'
+        value='Sign Up'
+        disabled={submitDisabled}
+        className='mx-auto mt-4 border rounded'
+      />
+      <FormErrorMessage errorMessage={serverErrorMessage} />
+    </form>
+  );
+};
+
+const SignUp: React.FC = () => {
+  return (
+    <Container
+      title='Sign Up'
+      subtitle={SUBTITLE}
+      fixedHeight={false}
+      fixedWidth={false}
+    >
+      <SignUpForm />
+      <LogInLink />
+    </Container>
   );
 };
 

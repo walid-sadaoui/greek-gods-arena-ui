@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'Dalek Pinpoint';
+  src: url('DalekPinpointBold.eot');
+  src: url('DalekPinpointBold.eot?#iefix') format('embedded-opentype'),
+    url('DalekPinpointBold.woff2') format('woff2'),
+    url('DalekPinpointBold.woff') format('woff'),
+    url('DalekPinpointBold.ttf') format('truetype'),
+    url('DalekPinpointBold.svg#DalekPinpointBold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}

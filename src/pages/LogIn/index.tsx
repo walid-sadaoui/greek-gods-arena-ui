@@ -3,17 +3,21 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Link, Redirect } from 'react-router-dom';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import LabelInput from '../components/common/LabelInput';
-import { useAuth } from '../shared/context/AuthContext';
+import LabelInput from 'components/common/LabelInput';
+import { useAuth } from 'shared/context/AuthContext';
+import Container from 'components/common/Container';
+import Button from 'components/common/Button';
+import FormErrorMessage from 'components/common/Form/FormErrorMessage';
 
 const SERVER_ERROR = 'Server Error, please try again later';
+const SUBTITLE = 'Bring your Greek Gods to the Top of the Olympus';
 
 interface LogInInput {
   email: string;
   password: string;
 }
 
-const LogInSchema = yup.object().shape({
+const logInSchema = yup.object().shape({
   email: yup
     .string()
     .email('Email must bu a valid email')
@@ -32,11 +36,21 @@ const LogInSchema = yup.object().shape({
     .required('Password is required'),
 });
 
-const LogIn: React.FC = () => {
+const SignUpLink: React.FC = () => {
+  return (
+    <span className='mx-auto mb-auto'>
+      You don't have an account ?{' '}
+      <Link to='/signup' className='text-blue-700 hover:underline'>
+        Sign up here
+      </Link>
+    </span>
+  );
+};
+
+const LogInForm: React.FC = () => {
   const [serverErrorMessage, setServerErrorMessage] =
     React.useState<string>('');
   const [LogInSuccess, setLogInSuccess] = React.useState<boolean>(false);
-  const [LogInError, setLogInError] = React.useState<boolean>(false);
   const [submitDisabled, setSubmitDisabled] = React.useState<boolean>(false);
   const {
     register,
@@ -45,7 +59,7 @@ const LogIn: React.FC = () => {
     formState: { errors },
   } = useForm<LogInInput>({
     mode: 'all',
-    resolver: yupResolver(LogInSchema),
+    resolver: yupResolver(logInSchema),
   });
   const { login } = useAuth();
 
@@ -54,7 +68,6 @@ const LogIn: React.FC = () => {
       setSubmitDisabled(true);
       const errorMessage = await login({ email, password });
       if (errorMessage) {
-        setLogInError(true);
         setServerErrorMessage(errorMessage);
         setSubmitDisabled(false);
       } else {
@@ -71,38 +84,55 @@ const LogIn: React.FC = () => {
   }, [setFocus]);
 
   return (
-    <article>
-      {LogInSuccess ? <Redirect to='/' /> : null}
-      <h2>Log In</h2>
-      <p>Bring your Greek Gods to the Top of the Olympus</p>
-      <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col'>
-        <LabelInput
-          id='LogInEmail'
-          label='Email'
-          type='email'
-          required
-          {...register('email')}
-        />
-        <p>{errors.email?.message}</p>
-        <LabelInput
-          id='LogInPassword'
-          label='Password'
-          type='password'
-          required
-          {...register('password')}
-        />
-        <p>{errors.password?.message}</p>
-        <input type='submit' value='Log In' disabled={submitDisabled} />
-        <p>{serverErrorMessage}</p>
-        <p>{LogInError}</p>
-      </form>
-      <span className='mx-auto'>
-        You don't have an account ?{' '}
-        <Link to='/signup' className='text-blue-700 hover:underline'>
-          Sign up here
-        </Link>
-      </span>
-    </article>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className='flex flex-col px-4 mt-auto'
+    >
+      {LogInSuccess && <Redirect to='/' />}
+      <LabelInput
+        id='LogInEmail'
+        label='Email'
+        type='email'
+        required
+        className='pt-4'
+        {...register('email')}
+      />
+      {errors.email?.message && (
+        <FormErrorMessage errorMessage={errors.email.message} />
+      )}
+      <LabelInput
+        id='LogInPassword'
+        label='Password'
+        type='password'
+        required
+        className='pt-4'
+        {...register('password')}
+      />
+      {errors.password?.message && (
+        <FormErrorMessage errorMessage={errors.password.message} />
+      )}
+      <Button
+        type='submit'
+        value='Log In'
+        disabled={submitDisabled}
+        className='mx-auto mt-4 border rounded'
+      />
+      <FormErrorMessage errorMessage={serverErrorMessage} />
+    </form>
+  );
+};
+
+const LogIn: React.FC = () => {
+  return (
+    <Container
+      title='Log In'
+      subtitle={SUBTITLE}
+      fixedHeight={false}
+      fixedWidth={false}
+    >
+      <LogInForm />
+      <SignUpLink />
+    </Container>
   );
 };
 

@@ -1,6 +1,12 @@
-import { APIResponse, getRequest, postRequest, ResponseData } from '.';
-import { Character, CharacterSkills } from '../models/Character';
-import { User } from '../models/User';
+import {
+  APIResponse,
+  deleteRequest,
+  getRequest,
+  postRequest,
+  ResponseData,
+} from '.';
+import { Character, CharacterSkills } from 'models/Character';
+import { User } from 'models/User';
 
 interface GetUserData extends ResponseData {
   user: User;
@@ -29,7 +35,7 @@ export const createCharacter = async (
 ): Promise<APIResponse<CreateCharacterData>> => {
   const createCharacterResponse = await postRequest<CreateCharacterData>(
     `/users/${userId}/characters`,
-    characterName
+    JSON.stringify({ characterName })
   );
   return createCharacterResponse;
 };
@@ -53,4 +59,14 @@ export const updateCharacter = async (
     JSON.stringify(characterProperties)
   );
   return editCharacterResponse;
+};
+
+export const deleteCharacter = async (
+  userId: string,
+  characterName: string
+): Promise<APIResponse<ResponseData>> => {
+  const deleteCharacterResponse = await deleteRequest<ResponseData>(
+    `/users/${userId}/characters/${characterName}`
+  );
+  return deleteCharacterResponse;
 };

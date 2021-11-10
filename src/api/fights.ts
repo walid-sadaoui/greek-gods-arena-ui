@@ -1,6 +1,6 @@
 import { APIResponse, getRequest, postRequest, ResponseData } from '.';
-import { GreekGods } from '../models/Character';
-import { Fight } from '../models/Fight';
+import { GreekGods } from 'models/Character';
+import { Fight } from 'models/Fight';
 
 interface FightData extends ResponseData {
   fight: Fight;

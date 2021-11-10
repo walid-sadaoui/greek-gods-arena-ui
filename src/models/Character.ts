@@ -28,7 +28,9 @@ export enum GreekGods {
   HEPHAESTUS = 'HEPHAESTUS',
   HERA = 'HERA',
   HERMES = 'HERMES',
-  HESTIA = 'HESTIA',
+  // HESTIA = 'HESTIA',
   POSEIDON = 'POSEIDON',
   ZEUS = 'ZEUS',
 }
+
+export const GreekGodsArray = Object.values(GreekGods);

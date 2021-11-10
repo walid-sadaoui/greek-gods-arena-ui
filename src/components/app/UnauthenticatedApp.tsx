@@ -4,19 +4,15 @@ import {
   Switch,
   Redirect,
   Route,
-  Link,
 } from 'react-router-dom';
-import SignUp from '../../pages/SignUp';
-import LogIn from '../../pages/LogIn';
+import SignUp from 'pages/SignUp';
+import LogIn from 'pages/LogIn';
+import UnauthenticatedHeader from './Header/UnauthenticatedHeader';
 
 const UnauthenticatedApp: FunctionComponent = () => {
   return (
     <Router>
-      <header>
-        <Link to='/'>Home</Link>
-        <Link to='/login'>Login</Link>
-        <Link to='/signup'>Sign Up</Link>
-      </header>
+      <UnauthenticatedHeader />
       <AppRoutes />
     </Router>
   );

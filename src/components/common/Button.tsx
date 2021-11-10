@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
-// import Icon from './Icon';
+import classNames from 'classnames';
+import Icon from './Icon';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  // onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   className?: string;
   icon?: string;
-  type?: 'button' | 'submit' | 'reset' | undefined;
   size?: ButtonSize;
   value?: string;
+  variant?: Variants;
 }
 
 export enum ButtonSize {
@@ -16,26 +16,33 @@ export enum ButtonSize {
   LARGE = 'large',
 }
 
-// color --> light dark --> correspondance bgcolor text color
-// variant --> outline full...
+export enum Variants {
+  BASE = 'base',
+  NEUTRAL = 'neutral',
+}
 
 const Button: FunctionComponent<ButtonProps> = ({
   children,
   className = '',
-  // onClick,
   icon,
-  // size = ButtonSize.MEDIUM,
-  type,
+  size = ButtonSize.MEDIUM,
   value,
+  variant = Variants.NEUTRAL,
   ...otherProps
 }) => {
   return (
     <button
-      type={type}
-      className={`py-2 px-2 rounded inline-flex ${className}`}
+      className={classNames(
+        'px-4 py-2 text-base disabled:text-gray-500 disabled:cursor-not-allowed uppercase',
+        {
+          'rounded-container bg-yellow-100 hover:bg-yellow-200 disabled:bg-gray-100':
+            variant === Variants.NEUTRAL,
+        },
+        className
+      )}
       {...otherProps}
     >
-      {/* {icon && <Icon icon={icon} size={size} aria-hidden="true" />} */}
+      {icon && <Icon icon={icon} size={size} aria-hidden='true' />}
       {value ? <span className={icon && 'ml-2'}>{value}</span> : children}
     </button>
   );

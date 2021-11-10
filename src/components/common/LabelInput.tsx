@@ -6,17 +6,20 @@ interface LabelInputProps {
   type: string;
   id: string;
   name: string;
-  classname?: string;
+  className?: string;
   required?: boolean;
   value?: string;
   maxLength?: number;
 }
 
 const LabelInput = forwardRef<HTMLInputElement, LabelInputProps>(
-  ({ label, type, id, name, maxLength, required, ...otherProps }, ref) => {
+  (
+    { label, type, id, name, maxLength, required, className, ...otherProps },
+    ref
+  ) => {
     return (
       <React.Fragment>
-        <label htmlFor={id}>
+        <label htmlFor={id} className={className}>
           {label}
           {required && <span className='text-red-500'>*</span>}
         </label>
@@ -27,6 +30,7 @@ const LabelInput = forwardRef<HTMLInputElement, LabelInputProps>(
           name={name}
           ref={ref}
           maxLength={maxLength}
+          className='w-full p-2 border rounded'
           {...otherProps}
         />
       </React.Fragment>
