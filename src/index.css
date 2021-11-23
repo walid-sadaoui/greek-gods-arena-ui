@@ -662,6 +662,9 @@ video {
 .pointer-events-none {
   pointer-events: none;
 }
+.visible {
+  visibility: visible;
+}
 .invisible {
   visibility: hidden;
 }

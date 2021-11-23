@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import Icon, { IconName } from 'components/common/Icon';
 import { Character } from 'models/Character';
 import { Fight } from 'models/Fight';
@@ -71,6 +72,13 @@ const FightOpponent: React.FC<FightOpponentProps> = ({
   remainingHealth,
   opponentTurn,
 }) => {
+  const variants = {
+    hidden: { scale: 1 },
+    visible: {
+      scale: 1.2,
+      transition: { duration: 1, yoyo: Infinity },
+    },
+  };
   return (
     <>
       <div className='flex flex-col items-center justify-end w-full h-2/3'>
@@ -86,7 +94,9 @@ const FightOpponent: React.FC<FightOpponentProps> = ({
             <p>{opponent.name}</p>
           </div>
           <div className='flex pb-2'>
-            <Icon icon='heart' className='mr-2 text-red-500' />
+            <motion.div initial='hidden' animate='visible' variants={variants}>
+              <Icon icon='heart' className='mr-2 text-red-500' />
+            </motion.div>
             <HealthBar max={opponent.health} skillValue={remainingHealth} />
           </div>
           <div className='flex'>
@@ -104,14 +114,18 @@ const FightOpponent: React.FC<FightOpponentProps> = ({
             />
           </div>
         </div>
-        <div
+        <motion.div
+          animate={{
+            rotate: remainingHealth === 0 ? -90 : 0,
+            transition: { duration: 1 },
+          }}
           className={`w-full h-full bg-center bg-no-repeat bg-contain ${
-            remainingHealth === 0 && 'transform -rotate-90 filter grayscale'
+            remainingHealth === 0 && 'transform filter grayscale'
           }`}
           style={{
             backgroundImage: `url(${`/src/assets/img/greek-gods/${opponent.name}.svg`})`,
           }}
-        ></div>
+        ></motion.div>
       </div>
     </>
   );
